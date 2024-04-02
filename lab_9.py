@@ -6,22 +6,32 @@ import matplotlib.pyplot as plt
 url = "https://github.com/esnt/Data/raw/main/Names/popular_names.csv"
 df = pd.read_csv(url)
 
-# Sidebar - Year selection
-year_range = st.sidebar.slider("Select Year", min_value=df["year"].min(), max_value=df["year"].max())
+year_range = st.slider("Select Year", min_value=df["year"].min(), max_value=df["year"].max())
 
-# Filter data based on selected year
-filtered_df = df[df["year"] == year_range]
+# Sidebar - Gender/sex selection
+selected_sex = st.radio("Select Gender", options=["Both", "Male", "Female"])
 
-# Group by name and sum the counts
-top_names = filtered_df.groupby("name")["n"].sum().sort_values(ascending=False).head(10)
+# Filter data based on selected year and gender/sex
+if selected_sex == "Both":
+    filtered_df = df[df["year"] == year_range]
+elif selected_sex == "Male":
+    filtered_df = df[(df["year"] == year_range) & (df["sex"] == "M")]
+else:
+    filtered_df = df[(df["year"] == year_range) & (df["sex"] == "F")]
 
-# Plot bar chart
+# Interactive element - Slider to select number of top names
+num_top_names = st.slider("Select Number of Top Names", min_value=1, max_value=20, value=10)
+
+# Group by name and sum the counts to get top names
+top_names = filtered_df.groupby("name")["n"].sum().sort_values(ascending=False).head(num_top_names)
+
+# Plot bar chart for top names
 st.bar_chart(top_names)
 
-# Show selected year
-st.write(f"Top 10 Names for the Year {year_range}")
+# Show selected year and gender/sex
+st.write(f"Top {num_top_names} {'Male' if selected_sex == 'Male' else 'Female' if selected_sex == 'Female' else 'Gender-Neutral'} Names for the Year {year_range}")
 
-selected_name = st.sidebar.selectbox("Select Name", df["name"].unique())
+selected_name = st.selectbox("Select Name", df["name"].unique())
 
 # Filter data for selected name
 name_data = df[df["name"] == selected_name]
